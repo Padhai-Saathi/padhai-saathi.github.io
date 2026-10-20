@@ -1,7 +1,7 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+// Firebase configuration for Padhai Saathi project
+export const firebaseConfig = {
   apiKey: "AIzaSyDS18GCicGgjwkdkWjs8xWaj8KWyffLMgM",
-  authDomain: "padhai-saathi-ba9c7.firebaseapp.com",
+  authDomain: "://firebaseapp.com",
   projectId: "padhai-saathi-ba9c7",
   storageBucket: "padhai-saathi-ba9c7.firebasestorage.app",
   messagingSenderId: "74149175982",
