@@ -1,6 +1,6 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithPopup,GoogleAuthProvider,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signOut,deleteUser} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,deleteDoc,collection,query,where,getDocs,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {firebaseConfig} from "./firebase-config.js";
 import {PRESET,BOARDS,CLASSES} from "./data.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -15,11 +15,11 @@ function hint(e){const d=(e.split("@")[1]||"").toLowerCase();if(["gmial.com","ga
 function daysTo(d){const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+"T00:00:00")-t)/864e5)}
 function safe(u){u=(u||"").trim();if(!u)return"";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);return/^https?:$/.test(x.protocol)?x.href:""}catch(e){return""}}
 const key=()=>D.board+"-"+D.cls,base=()=>PRESET[key()]||{};
-function fresh(name,school,board,cls){const p=PRESET[board+"-"+cls],subs={};if(p){for(const k in p)subs[k]=p[k].map(n=>({n,s:0}))}else(cls>=11?["English"]:["Maths","Science","Social Science","English","Hindi"]).forEach(k=>subs[k]=[]);return{name,school,board,cls,photo:"",tt:{school:{},me:{}},subs,exams:[],links:{web:"",wa:"",groups:[]}}}
-function fromDb(d){const subs={};(d.subjects||[]).forEach(s=>subs[s.n]=s.ch||[]);return{name:d.name||"",school:d.school||"",board:d.board||"CBSE",cls:d.cls||9,photo:d.photo||"",tt:{school:d.tt?.school||{},me:d.tt?.me||{}},subs,exams:d.exams||[],links:Object.assign({web:"",wa:"",groups:[]},d.links)}}
-function save(){clearTimeout(saveT);saveT=setTimeout(async()=>{try{await setDoc(doc(db,"students",U.uid),{name:D.name,school:D.school,board:D.board,cls:D.cls,photo:D.photo||"",tt:D.tt,subjects:Object.entries(D.subs).map(([n,ch])=>({n,ch})),exams:D.exams,links:D.links,updatedAt:serverTimestamp()})}catch(e){note("Could not save your changes. Please check your connection.")}},700)}
+function fresh(name,school,board,cls){const p=PRESET[board+"-"+cls],subs={};if(p){for(const k in p)subs[k]=p[k].map(n=>({n,s:0}))}else(cls>=11?["English"]:["Maths","Science","Social Science","English","Hindi"]).forEach(k=>subs[k]=[]);return{name,school,board,cls,photo:"",tt:{school:{},me:{}},books:[],subs,exams:[],links:{web:"",wa:"",groups:[]}}}
+function fromDb(d){const subs={};(d.subjects||[]).forEach(s=>subs[s.n]=s.ch||[]);return{name:d.name||"",school:d.school||"",board:d.board||"CBSE",cls:d.cls||9,photo:d.photo||"",tt:{school:d.tt?.school||{},me:d.tt?.me||{}},books:d.books||[],subs,exams:d.exams||[],links:Object.assign({web:"",wa:"",groups:[]},d.links)}}
+function save(){clearTimeout(saveT);saveT=setTimeout(async()=>{try{await setDoc(doc(db,"students",U.uid),{name:D.name,school:D.school,board:D.board,cls:D.cls,photo:D.photo||"",tt:D.tt,books:D.books,subjects:Object.entries(D.subs).map(([n,ch])=>({n,ch})),exams:D.exams,links:D.links,updatedAt:serverTimestamp()})}catch(e){note("Could not save your changes. Please check your connection.")}},700)}
 async function enter(u){U=u;
- if(!u){D=null;view="auth";return render()}
+ if(!u){D=null;NC={key:"",list:[],busy:false};lib={v:"notes",c:null,draft:{t:"",x:""},pend:[]};view="auth";return render()}
  if(!/@gmail\.com$/i.test(u.email||"")){await signOut(auth);view="auth";render();return note("Please use a Gmail account.")}
  if(!u.emailVerified){view="verify";return render()}
  view="load";render();
@@ -65,13 +65,33 @@ function timetable(){const L=ttList(ttV,ttD),ed=ttE&&L.find(x=>x.id==ttE),dn=DAY
  const cps=[["wk","Monday to Friday"],["six","Monday to Saturday"],["all","All 7 days"],...DAYS.filter(d=>d[0]!=ttD).map(d=>[d[0],"Only "+d[2]])];
  let h=`<h2>Timetable</h2><div class="seg"><button class="${ttV=="school"?"on":""}" onclick="ttSet('school')">School timetable</button><button class="${ttV=="me"?"on":""}" onclick="ttSet('me')">My daily schedule</button></div><div class="tabs">${DAYS.map(([k,l])=>`<button class="${k==ttD?"on":""}" onclick="ttDay('${k}')">${l}${k==todayK()?" <small>Today</small>":""}</button>`).join("")}</div>`;
  h+=`<div class="card"><div class="row" style="margin-bottom:6px"><b>${dn}</b><span class="mute">${L.length} ${L.length==1?"entry":"entries"}</span></div>${L.length?L.map(x=>`<div class="ch"><span><b>${f12(x.s)} – ${f12(x.e)}</b><div class="mute">${esc(x.n)} · ${esc(x.k)}</div></span><button class="ghost" onclick="ttEdit('${x.id}')">Edit</button><button class="x" aria-label="Remove entry" onclick="ttDel('${x.id}')">×</button></div>`).join(""):`<p class="mute" style="margin:0">Nothing added for ${dn} yet.</p>`}</div>`;
- h+=`<div class="card"><b>${ed?"Edit entry":"Add to "+dn}</b><div class="two" style="margin-top:8px"><div><label for="t1">Start time</label><input type="time" id="t1" value="${ed?ed.s:""}"></div><div><label for="t2">End time</label><input type="time" id="t2" value="${ed?ed.e:""}"></div></div><label for="tn">${ttV=="school"?"Subject or activity":"Activity"}</label><input id="tn" list="tsub" maxlength="60" placeholder="${ttV=="school"?"For example, Maths":"For example, Revise Science"}" value="${ed?esc(ed.n):""}"><datalist id="tsub">${Object.keys(D.subs).map(k=>`<option value="${esc(k)}">`).join("")}</datalist><label for="tk">Type</label><select id="tk">${KINDS[ttV].map(k=>`<option ${ed&&ed.k==k?"selected":""}>${k}</option>`).join("")}</select><button class="btn" onclick="ttSave()">${ed?"Save changes":"Add"}</button>${ed?`<button class="ghost" style="margin-left:8px" onclick="ttCancel()">Cancel</button>`:""}</div>`;
+ h+=`<div class="card"><b>${ed?"Edit entry":"Add an entry"}</b><div class="two" style="margin-top:8px"><div><label for="t1">Start time</label><input type="time" id="t1" value="${ed?ed.s:""}"></div><div><label for="t2">End time</label><input type="time" id="t2" value="${ed?ed.e:""}"></div></div><label for="tn">${ttV=="school"?"Subject or activity":"Activity"}</label><input id="tn" list="tsub" maxlength="60" placeholder="${ttV=="school"?"For example, Maths":"For example, Revise Science"}" value="${ed?esc(ed.n):""}"><datalist id="tsub">${Object.keys(D.subs).map(k=>`<option value="${esc(k)}">`).join("")}</datalist><label for="tk">Type</label><select id="tk">${KINDS[ttV].map(k=>`<option ${ed&&ed.k==k?"selected":""}>${k}</option>`).join("")}</select>${ed?"":dayPicker()}<button class="btn" onclick="ttSave()">${ed?"Save changes":"Add"}</button>${ed?`<button class="ghost" style="margin-left:8px" onclick="ttCancel()">Cancel</button>`:""}</div>`;
  if(L.length)h+=`<div class="card"><b>Copy ${dn} to other days</b><p class="mute" style="margin:2px 0 8px">Saves time if several days are the same. Entries on the chosen days are replaced.</p><div class="row"><select id="tcp" style="margin:0">${cps.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select><button class="ghost" style="flex:none" onclick="ttCopy()">Copy</button></div></div>`;
  return h}
-function navB(){return [["home","Home"],["syl","Syllabus"],["exam","Exams"],["tt","Timetable"],["sch","My School"]].map(([k,t])=>`<button class="${tab==k?"on":""}" onclick="go('${k}')">${t}</button>`).join("")}
+let lib={v:"notes",c:null,draft:{t:"",x:""},pend:[]},NC={key:"",list:[],busy:false};
+const okImg=d=>typeof d=="string"&&d.startsWith("data:image/jpeg;base64,");
+function showImg(src,round){const d=document.createElement("div");d.className="lb";d.setAttribute("role","dialog");d.setAttribute("aria-label","Picture");d.innerHTML=`<div class="lbin"><img class="${round?"":"sq"}" src="${src}" alt="Picture"><button class="btn" id="lbx">Close</button></div>`;d.onclick=e=>{if(e.target.tagName!="IMG")d.remove()};document.body.appendChild(d);document.getElementById("lbx").focus()}
+function shrink(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.65))};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(f)})}
+async function delNotes(){const sn=await getDocs(collection(db,"students",U.uid,"notes"));await Promise.all(sn.docs.map(d=>deleteDoc(d.ref)))}
+async function loadNotes(){const key=cur+"|"+lib.c;NC={key,list:[],busy:true};render();let bad=false;
+ try{const sn=await getDocs(query(collection(db,"students",U.uid,"notes"),where("s","==",cur),where("c","==",lib.c)));if(NC.key!=key)return;NC={key,list:sn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts),busy:false}}catch(e){console.error(e);NC={key,list:[],busy:false};bad=true}
+ render();if(bad)note("Could not load your notes. Check your connection and the Firebase rules.")}
+function dayPicker(){return `<label>Days</label><div class="dayp">${DAYS.map(([k,l])=>`<label class="dchip"><input type="checkbox" class="dk" value="${k}" ${k==ttD?"checked":""}><span>${l}</span></label>`).join("")}</div><div class="mute" style="margin:0 0 12px">Quick select: <button class="link" style="padding:0" onclick="ttPick('wk')">Mon–Fri</button> · <button class="link" style="padding:0" onclick="ttPick('six')">Mon–Sat</button> · <button class="link" style="padding:0" onclick="ttPick('all')">All days</button> · <button class="link" style="padding:0" onclick="ttPick('none')">Clear</button></div>`}
+function library(){const ks=Object.keys(D.subs);if(!D.subs[cur])cur=ks[0];const a=D.subs[cur]||[],nt=lib.v=="notes";
+ let h=`<h2>Notes and Books</h2><div class="seg"><button class="${nt?"on":""}" onclick="libSet('notes')">Notes</button><button class="${nt?"":"on"}" onclick="libSet('books')">Books</button></div><div class="tabs">${ks.map((k,i)=>`<button class="${k==cur?"on":""}" onclick="pickL(${i})">${esc(k)}</button>`).join("")}<button onclick="addSub()">+ Subject</button></div>`;
+ if(lib.c===null)return h+`<div class="card"><div class="row"><b>${esc(cur)}</b><span class="mute">Choose a chapter</span></div><button class="subrow" onclick="libOpen('')"><b>General (whole subject)</b></button>${a.map((c,i)=>`<button class="subrow" onclick="libOpen(${i})">${esc(c.n)}</button>`).join("")}<div style="display:flex;gap:8px;margin-top:12px"><input id="lc" placeholder="Add a chapter" maxlength="100" style="margin:0"><button class="btn" onclick="libAddCh()">Add</button></div></div>`;
+ h+=`<div class="row" style="margin:8px 0"><button class="ghost" onclick="libBack()">← Chapters</button><b style="text-align:right">${esc(cur)} · ${lib.c===""?"General":esc(lib.c)}</b></div>`;
+ return h+(nt?notesPane():booksPane())}
+function notesPane(){const key=cur+"|"+lib.c,L=NC.key==key?NC.list:[];
+ let h=`<div class="card"><b>Add a note</b><label for="nt">Title</label><input id="nt" maxlength="80" value="${esc(lib.draft.t)}"><label for="nx">Note</label><textarea id="nx" rows="5" maxlength="5000">${esc(lib.draft.x)}</textarea><label>Pictures of your notes (up to 3)</label><div><label class="ghost pbtn">Choose pictures<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onchange="addImgs(this)"></label></div><div class="thumbs">${lib.pend.map((d,i)=>`<span class="th"><img src="${d}" alt="Picture ${i+1}"><button class="x" aria-label="Remove picture" onclick="rmImg(${i})">×</button></span>`).join("")}</div><button class="btn" onclick="noteSave()">Save note</button></div><h2>Saved notes</h2>`;
+ if(NC.key!=key||NC.busy)return h+`<p class="mute">Loading…</p>`;
+ return h+(L.length?L.map(n=>`<div class="card"><div class="row"><b>${esc(n.t||"Untitled")}</b><button class="x" aria-label="Delete note" onclick="noteDel('${esc(n.id)}')">×</button></div>${n.x?`<p style="white-space:pre-wrap;margin:8px 0">${esc(n.x)}</p>`:""}<div class="thumbs">${(n.im||[]).filter(okImg).map((d,i)=>`<span class="th"><button class="thb" onclick="viewNote('${esc(n.id)}',${i})"><img src="${d}" alt="Note picture ${i+1}"></button></span>`).join("")}</div><div class="mute">${new Date(n.ts).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div></div>`).join(""):`<p class="mute">No notes here yet.</p>`)}
+function booksPane(){const L=D.books.filter(b=>b.s==cur&&b.c===lib.c);
+ return `<div class="card"><b>Add a book</b><p class="mute" style="margin:2px 0 8px">Paste a link to the book, for example from Google Drive or the NCERT website. We save the link, not the file.</p><label for="bt">Book name</label><input id="bt" maxlength="100"><label for="bu">Link</label><input id="bu" placeholder="https://..." maxlength="300"><button class="btn" onclick="bookAdd()">Add book</button></div>${D.board=="CBSE"?`<a class="lnk" href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener">NCERT textbooks (official site)</a>`:""}<h2>Saved books</h2>`+(L.length?`<div class="card">${L.map(b=>{const u=safe(b.u);return `<div class="ch"><span>${esc(b.t)}</span>${u?`<a class="ghost" style="text-decoration:none" href="${esc(u)}" target="_blank" rel="noopener">Open</a>`:""}<button class="x" aria-label="Remove book" onclick="bookDel('${esc(b.id)}')">×</button></div>`}).join("")}</div>`:`<p class="mute">No books here yet.</p>`)}
+function navB(){return [["home","Home"],["syl","Syllabus"],["exam","Exams"],["tt","Timetable"],["lib","Library"],["sch","My School"]].map(([k,t])=>`<button class="${tab==k?"on":""}" onclick="go('${k}')">${t}</button>`).join("")}
 function main(){remember();const all=Object.values(D.subs).flat();
  let h=`<header class="appbar"><div class="appin"><div class="logo"><span class="mark">P</span>Padhai Saathi</div><div class="tnav">${navB()}</div><div class="who"><button class="av" onclick="toggleMenu(event)" aria-label="Account menu" aria-haspopup="menu">${avatar()}</button><div class="menu" id="menu" role="menu"><div class="mhead"><b>${esc(tc(D.name))}</b>${esc(U.email)}</div><button role="menuitem" onclick="go('prof')">My Profile</button><button role="menuitem" class="dn" onclick="out()">Sign Out</button></div></div></div></header><main class="wrap"><div id="msg" class="msg" role="alert"></div>`;
- h+=tab=="home"?home(all):tab=="syl"?syl(all):tab=="exam"?exam():tab=="tt"?timetable():tab=="prof"?prof():school();
+ h+=tab=="home"?home(all):tab=="syl"?syl(all):tab=="exam"?exam():tab=="tt"?timetable():tab=="lib"?library():tab=="prof"?prof():school();
  h+=`<div class="foot"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a></div></main><nav class="bnav">${navB()}</nav>`;
  $("app").innerHTML=h}
 function home(all){const p=pct(all),done=all.filter(c=>c.s==2).length,ks=Object.keys(D.subs),up=D.exams.filter(e=>daysTo(e.d)>=0).sort((a,b)=>a.d<b.d?-1:1),nx=up[0],fd=d=>new Date(d+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
@@ -128,7 +148,7 @@ const W={
  delCh(i){D.subs[cur].splice(i,1);save();render()},
  addCh(){const v=$("nc").value.trim();if(!v)return;D.subs[cur].push({n:v,s:0});save();render()},
  addSub(){const v=(prompt("Name of the new subject")||"").trim().slice(0,60);if(!v||D.subs[v]||v.startsWith("__"))return;D.subs[v]=[];cur=v;save();render()},
- delSub(){if(confirm(`Remove ${cur}?`)){delete D.subs[cur];D.exams=D.exams.map(e=>e.sel?{...e,sel:e.sel.filter(x=>x.s!=cur)}:e).filter(e=>e.sel?e.sel.length:e.s!=cur);cur=Object.keys(D.subs)[0];save();render()}},
+ delSub(){if(confirm(`Remove ${cur}?`)){delete D.subs[cur];D.books=D.books.filter(b=>b.s!=cur);D.exams=D.exams.map(e=>e.sel?{...e,sel:e.sel.filter(x=>x.s!=cur)}:e).filter(e=>e.sel?e.sel.length:e.s!=cur);cur=Object.keys(D.subs)[0];save();render()}},
  addEx(){const nm=$("en").value.trim();if(!nm)return note("Please enter the exam name.");if(!$("ed").value)return note("Please choose the exam date.");
   const ks=Object.keys(D.subs),sel=[];ks.forEach((k,i)=>{const ch=[...document.querySelectorAll(`.cb[data-s="${i}"]`)].filter(x=>x.checked).map(x=>D.subs[k][+x.dataset.c].n);if(ch.length)sel.push({s:k,ch})});
   if(!sel.length)return note("Please tick at least one chapter for this exam.");
@@ -145,14 +165,14 @@ const W={
  switchTo(i){pre=accs()[i];mode="in";signOut(auth)},
  addAcc(){pre=null;mode="in";signOut(auth)},
  forget(i){const a=accs();a.splice(i,1);saveAcc(a);render()},
- async resetP(){if(!confirm("Delete all your syllabus progress, exams, links, timetable and profile picture, and start again with new details? Your login stays."))return;try{clearTimeout(saveT);await deleteDoc(doc(db,"students",U.uid));D=null;view="setup";render()}catch(x){note(errMsg(x))}},
+ async resetP(){if(!confirm("Delete all your syllabus progress, exams, links, timetable and profile picture, and start again with new details? Your login stays."))return;try{clearTimeout(saveT);await delNotes();await deleteDoc(doc(db,"students",U.uid));D=null;view="setup";render()}catch(x){note(errMsg(x))}},
  async delAcc(){if(!confirm("Permanently delete your account and all your data? This cannot be undone."))return;const em=U.email;
-  try{clearTimeout(saveT);await deleteDoc(doc(db,"students",U.uid));await deleteUser(auth.currentUser);saveAcc(accs().filter(a=>a.email!=em))}
+  try{clearTimeout(saveT);await delNotes();await deleteDoc(doc(db,"students",U.uid));await deleteUser(auth.currentUser);saveAcc(accs().filter(a=>a.email!=em))}
   catch(x){note(x.code=="auth/requires-recent-login"?"Your data is deleted, but for safety the login needs a fresh sign-in. Sign out, sign in again, then press Delete my account once more.":errMsg(x))}},
  toggleMenu(ev){ev.stopPropagation();document.getElementById("menu").classList.toggle("open")},
  tg(id,o){o?openEx.add(id):openEx.delete(id)},
  setX(si,i,v){const k=Object.keys(D.subs)[si];if(!k)return;D.subs[k][i].s=+v;save();render()},
- viewPic(){if(!hasPic())return;const d=document.createElement("div");d.className="lb";d.setAttribute("role","dialog");d.setAttribute("aria-label","Profile picture");d.innerHTML=`<div class="lbin"><img src="${D.photo}" alt="Profile picture"><button class="btn" id="lbx">Close</button></div>`;d.onclick=e=>{if(e.target.tagName!="IMG")d.remove()};document.body.appendChild(d);document.getElementById("lbx").focus()},
+ viewPic(){if(hasPic())showImg(D.photo,true)},
  openSub(i){cur=Object.keys(D.subs)[i];tab="syl";render();scrollTo(0,0)},
  ttSet(v){ttV=v;ttE=null;render()},
  ttDay(d){ttD=d;ttE=null;render()},
@@ -161,12 +181,34 @@ const W={
  ttDel(id){const w=D.tt[ttV]=D.tt[ttV]||{};w[ttD]=(w[ttD]||[]).filter(x=>x.id!=id);ttE=null;save();render()},
  ttSave(){const s=$("t1").value,e=$("t2").value,n=$("tn").value.trim(),k=$("tk").value;
   if(!s||!e)return note("Please choose the start and end time.");if(e<=s)return note("The end time must be after the start time.");if(!n)return note("Please enter the subject or activity.");
-  const w=D.tt[ttV]=D.tt[ttV]||{},a=w[ttD]=w[ttD]||[],clash=a.find(x=>x.id!=ttE&&s<x.e&&e>x.s);
-  if(ttE){const x=a.find(x=>x.id==ttE);if(x)Object.assign(x,{s,e,n,k})}else a.push({id:uid(),s,e,n,k});
-  ttE=null;save();render();note(clash?`Saved. It overlaps with "${clash.n}".`:"Saved.",true)},
+  const w=D.tt[ttV]=D.tt[ttV]||{},days=ttE?[ttD]:[...document.querySelectorAll(".dk:checked")].map(x=>x.value);
+  if(!days.length)return note("Please choose at least one day.");
+  let clash=null;
+  days.forEach(d=>{const a=w[d]=w[d]||[];clash=clash||a.find(x=>x.id!=ttE&&s<x.e&&e>x.s);
+   if(ttE){const x=a.find(x=>x.id==ttE);if(x)Object.assign(x,{s,e,n,k})}else a.push({id:uid(),s,e,n,k})});
+  ttE=null;save();render();note(clash?`Saved. It overlaps with "${clash.n}".`:days.length>1?`Saved for ${days.length} days.`:"Saved.",true)},
+ ttPick(w){const n={wk:5,six:6,all:7,none:0}[w];document.querySelectorAll(".dk").forEach((x,i)=>x.checked=i<n)},
  ttCopy(){const v=$("tcp").value,src=ttList(ttV,ttD),all=DAYS.map(d=>d[0]),T={wk:all.slice(0,5),six:all.slice(0,6),all}[v]||[v],to=T.filter(d=>d!=ttD);
   if(!src.length||!to.length)return;if(!confirm(`Copy this day to ${to.length} other day(s)? Their current entries will be replaced.`))return;
   D.tt[ttV]=D.tt[ttV]||{};to.forEach(d=>D.tt[ttV][d]=src.map(x=>({...x,id:uid()})));save();render();note("Copied.",true)},
+ libSet(v){lib.v=v;lib.c=null;render()},
+ pickL(i){cur=Object.keys(D.subs)[i];lib.c=null;render()},
+ libOpen(i){lib.c=i===""?"":D.subs[cur][i].n;lib.draft={t:"",x:""};lib.pend=[];render();if(lib.v=="notes")loadNotes()},
+ libBack(){lib.c=null;render()},
+ libAddCh(){const v=$("lc").value.trim();if(!v)return;D.subs[cur].push({n:v,s:0});save();render()},
+ async addImgs(inp){W.keepDraft();let m="";for(const f of [...inp.files]){if(lib.pend.length>=3){m="You can add up to 3 pictures to a note.";break}
+   if(!/^image\/(jpeg|png|webp)$/.test(f.type)){m="Please choose JPG, PNG or WebP pictures.";continue}
+   try{lib.pend.push(await shrink(f));if(lib.pend.join("").length>850000){lib.pend.pop();m="The pictures are too large. Use fewer or smaller pictures."}}catch(e){m="One picture could not be read."}}
+  render();if(m)note(m)},
+ keepDraft(){const t=$("nt"),x=$("nx");if(t&&x)lib.draft={t:t.value,x:x.value}},
+ rmImg(i){W.keepDraft();lib.pend.splice(i,1);render()},
+ async noteSave(){W.keepDraft();const t=lib.draft.t.trim(),x=lib.draft.x.trim();if(!t&&!x&&!lib.pend.length)return note("Please add a title, a note or a picture.");
+  const n={s:cur,c:lib.c,t,x,im:lib.pend,ts:Date.now()};
+  try{const r=await addDoc(collection(db,"students",U.uid,"notes"),n);if(NC.key==cur+"|"+lib.c)NC.list.unshift({id:r.id,...n});lib.draft={t:"",x:""};lib.pend=[];render();note("Note saved.",true)}catch(e){console.error(e);note("Could not save the note. Check the Firebase rules and the picture size.")}},
+ async noteDel(id){if(!confirm("Delete this note?"))return;try{await deleteDoc(doc(db,"students",U.uid,"notes",id));NC.list=NC.list.filter(n=>n.id!=id);render()}catch(e){note(errMsg(e))}},
+ viewNote(id,i){const n=NC.list.find(x=>x.id==id),d=n&&(n.im||[]).filter(okImg)[i];if(d)showImg(d,false)},
+ bookAdd(){const t=$("bt").value.trim(),u=$("bu").value.trim();if(!t)return note("Please enter the book name.");if(!safe(u))return note("Please paste a valid link.");D.books.push({id:uid(),s:cur,c:lib.c,t,u});save();render()},
+ bookDel(id){D.books=D.books.filter(b=>b.id!=id);save();render()},
  delEx(id){D.exams=D.exams.filter(e=>e.id!=id);save();render()},
  saveL(){D.links.web=$("lw").value.trim();D.links.wa=$("lwa").value.trim();save();render();note("Saved.",true)},
  addG(){const n=$("gn").value.trim();if(!n)return;D.links.groups.push({n,l:$("gl").value.trim()});save();render()},
