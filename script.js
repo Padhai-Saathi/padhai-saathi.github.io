@@ -7,7 +7,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id),ST=["Not started","In progress","Done","Revision"],GM=/^[a-z0-9._+-]+@gmail\.com$/i;
 const ERR={"auth/invalid-credential":"Incorrect email or password.","auth/email-already-in-use":"This Gmail is already registered. Please sign in instead.","auth/weak-password":"Password must be at least 8 characters.","auth/too-many-requests":"Too many attempts. Please try again later.","auth/popup-closed-by-user":"Sign-in was cancelled.","auth/cancelled-popup-request":"Sign-in was cancelled.","auth/unauthorized-domain":"This website is not authorised in Firebase yet. Add its domain under Authentication > Settings > Authorized domains.","auth/operation-not-allowed":"This sign-in method is not enabled in Firebase yet.","auth/popup-blocked":"Your browser blocked the sign-in pop-up. Allow pop-ups for this site and try again.","auth/network-request-failed":"Network error. Please check your connection.",def:"Something went wrong. Please try again."};
 const errMsg=x=>{console.error(x);return ERR[x.code]||ERR.def+" ("+(x.code||"unknown")+")"};
-let U=null,D=null,view="load",mode="in",tab="syl",cur="Maths",lastSent=0,saveT,pre=null;
+let U=null,D=null,view="load",mode="in",tab="home",cur="Maths",lastSent=0,saveT,pre=null;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct=a=>a.length?Math.round(a.filter(c=>c.s==2).length/a.length*100):0,left=a=>a.filter(c=>c.s<2).length;
 function note(t,ok){const m=$("msg");if(m){m.textContent=t;m.className="msg "+(ok?"okm":"err")}}
@@ -23,7 +23,7 @@ async function enter(u){U=u;
  if(!/@gmail\.com$/i.test(u.email||"")){await signOut(auth);view="auth";render();return note("Please use a Gmail account.")}
  if(!u.emailVerified){view="verify";return render()}
  view="load";render();
- try{const s=await getDoc(doc(db,"students",u.uid));if(s.exists()){D=fromDb(s.data());view="main";pre=null}else view="setup"}catch(e){view="fail"}
+ try{const s=await getDoc(doc(db,"students",u.uid));if(s.exists()){D=fromDb(s.data());view="main";pre=null;tab="home"}else view="setup"}catch(e){view="fail"}
  render()}
 onAuthStateChanged(auth,enter);
 function shell(inner){return `<div class="auth"><div class="brand"><span class="mark">P</span>Padhai Saathi</div><p class="mute center">Study planner for school students</p>${inner}<div class="foot"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a></div></div>`}
@@ -52,15 +52,19 @@ const openEx=new Set();
 document.addEventListener("click",()=>{const m=document.getElementById("menu");if(m)m.classList.remove("open")});
 document.addEventListener("keydown",e=>{if(e.key=="Escape"){document.querySelectorAll(".lb").forEach(x=>x.remove());const m=document.getElementById("menu");if(m)m.classList.remove("open")}});
 function chList(e,per){const ks=Object.keys(D.subs);return `<details class="sb" style="margin-top:10px" ${openEx.has(e.id)?"open":""} ontoggle="tg('${esc(e.id)}',this.open)"><summary><b>Update chapters</b><span class="mute">${per.reduce((n,p)=>n+p.items.length,0)} chapters</span></summary>${per.map(p=>`<div class="mute" style="padding:8px 14px 0;font-weight:700">${esc(p.s)}</div>${p.items.map(o=>`<div class="ch" style="padding:8px 14px"><span style="font-weight:500">${esc(o.c.n)}</span><select class="s${o.c.s}" aria-label="Status of ${esc(o.c.n)}" onchange="setX(${ks.indexOf(p.s)},${o.i},this.value)">${ST.map((t,j)=>`<option value="${j}" ${j==o.c.s?"selected":""}>${t}</option>`).join("")}</select></div>`).join("")}`).join("")}</details>`}
-function navB(){return [["syl","Syllabus"],["exam","Exams"],["sch","My School"]].map(([k,t])=>`<button class="${tab==k?"on":""}" onclick="go('${k}')">${t}</button>`).join("")}
+function navB(){return [["home","Home"],["syl","Syllabus"],["exam","Exams"],["sch","My School"]].map(([k,t])=>`<button class="${tab==k?"on":""}" onclick="go('${k}')">${t}</button>`).join("")}
 function main(){remember();const all=Object.values(D.subs).flat();
  let h=`<header class="appbar"><div class="appin"><div class="logo"><span class="mark">P</span>Padhai Saathi</div><div class="tnav">${navB()}</div><div class="who"><button class="av" onclick="toggleMenu(event)" aria-label="Account menu" aria-haspopup="menu">${avatar()}</button><div class="menu" id="menu" role="menu"><div class="mhead"><b>${esc(tc(D.name))}</b>${esc(U.email)}</div><button role="menuitem" onclick="go('prof')">My Profile</button><button role="menuitem" class="dn" onclick="out()">Sign Out</button></div></div></div></header><main class="wrap"><div id="msg" class="msg" role="alert"></div>`;
- h+=tab=="syl"?syl(all):tab=="exam"?exam():tab=="prof"?prof():school();
+ h+=tab=="home"?home(all):tab=="syl"?syl(all):tab=="exam"?exam():tab=="prof"?prof():school();
  h+=`<div class="foot"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a></div></main><nav class="bnav">${navB()}</nav>`;
  $("app").innerHTML=h}
-function syl(all){const p=pct(all),ks=Object.keys(D.subs);if(!D.subs[cur])cur=ks[0];const a=D.subs[cur]||[];
- const done=all.filter(c=>c.s==2).length,nx=D.exams.filter(e=>daysTo(e.d)>=0).sort((a,b)=>a.d<b.d?-1:1)[0];
+function home(all){const p=pct(all),done=all.filter(c=>c.s==2).length,ks=Object.keys(D.subs),up=D.exams.filter(e=>daysTo(e.d)>=0).sort((a,b)=>a.d<b.d?-1:1),nx=up[0],fd=d=>new Date(d+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
  let h=`<section class="hero"><div class="hello">Hello, ${esc(tc(D.name.split(" ")[0]))}</div><div class="herosub">${esc(tc(D.school))}${D.school?" · ":""}${esc(D.board)} · Class ${D.cls}</div></section><div class="stats"><div class="stat"><span class="k">Overall progress</span><span class="v">${p}%</span><div class="bar"><i style="width:${p}%"></i></div></div><div class="stat"><span class="k">Chapters left</span><span class="v">${all.length-done}</span><span class="sub">${done} of ${all.length} done</span></div><div class="stat"><span class="k">Next exam</span><span class="v">${nx?daysTo(nx.d)+" days":"None yet"}</span><span class="sub">${nx?esc(nx.n||nx.s):"Add one in Exams"}</span></div></div>`;
+ h+=`<h2>Subjects</h2><div class="card">${ks.length?ks.map((k,i)=>{const a=D.subs[k];return `<button class="subrow" onclick="openSub(${i})"><div class="row"><b>${esc(k)}</b><span class="mute">${a.filter(c=>c.s==2).length} of ${a.length} done · ${pct(a)}%</span></div><div class="bar"><i style="width:${pct(a)}%"></i></div></button>`}).join(""):`<p class="mute" style="margin:0">No subjects yet. Add one in the Syllabus tab.</p>`}</div><h2>Upcoming exams</h2>`;
+ h+=up.length?`<div class="card">${up.slice(0,3).map(e=>{const n=daysTo(e.d),{a}=exStats(e);return `<button class="subrow" onclick="go('exam')"><div class="row"><div><b>${esc(e.n||e.s||"Exam")}</b><div class="mute">${fd(e.d)}</div></div><div style="text-align:right"><b class="exd ${n<=3?"near":""}">${n==0?"Today":n+" days"}</b><div class="mute">${pct(a)}% done</div></div></div></button>`}).join("")}</div>`:`<div class="card"><p class="mute" style="margin:0">No upcoming exams yet. <button class="link" style="padding:0" onclick="go('exam')">Add an exam</button></p></div>`;
+ return h}
+function syl(all){const p=pct(all),ks=Object.keys(D.subs);if(!D.subs[cur])cur=ks[0];const a=D.subs[cur]||[];
+ let h="";
  if(!PRESET[key()])h+=`<div class="msg okm">Chapters for ${esc(D.board)} Class ${D.cls} are not preloaded yet. Add your own chapters below, subject by subject.</div>`;
  h+=`<div class="tabs">${ks.map((k,i)=>`<button class="${k==cur?"on":""}" onclick="pick(${i})">${esc(k)} <small>${pct(D.subs[k])}%</small></button>`).join("")}<button onclick="addSub()">+ Subject</button></div>`;
  h+=`<div class="card"><div class="row"><b>${esc(cur)}</b><span class="mute">${pct(a)}% done · ${left(a)} left</span></div><div class="bar"><i style="width:${pct(a)}%"></i></div>`;
@@ -132,6 +136,7 @@ const W={
  tg(id,o){o?openEx.add(id):openEx.delete(id)},
  setX(si,i,v){const k=Object.keys(D.subs)[si];if(!k)return;D.subs[k][i].s=+v;save();render()},
  viewPic(){if(!hasPic())return;const d=document.createElement("div");d.className="lb";d.setAttribute("role","dialog");d.setAttribute("aria-label","Profile picture");d.innerHTML=`<div class="lbin"><img src="${D.photo}" alt="Profile picture"><button class="btn" id="lbx">Close</button></div>`;d.onclick=e=>{if(e.target.tagName!="IMG")d.remove()};document.body.appendChild(d);document.getElementById("lbx").focus()},
+ openSub(i){cur=Object.keys(D.subs)[i];tab="syl";render();scrollTo(0,0)},
  delEx(id){D.exams=D.exams.filter(e=>e.id!=id);save();render()},
  saveL(){D.links.web=$("lw").value.trim();D.links.wa=$("lwa").value.trim();save();render();note("Saved.",true)},
  addG(){const n=$("gn").value.trim();if(!n)return;D.links.groups.push({n,l:$("gl").value.trim()});save();render()},

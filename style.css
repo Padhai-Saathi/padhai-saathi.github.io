@@ -92,3 +92,6 @@ button.av:disabled{cursor:default;color:var(--acc)}
 .lb{position:fixed;inset:0;background:rgba(8,12,24,.8);display:grid;place-items:center;z-index:50;padding:20px}
 .lbin{display:flex;flex-direction:column;align-items:center;gap:18px}
 .lbin img{width:min(80vw,420px);height:min(80vw,420px);border-radius:50%;object-fit:cover;border:4px solid #fff}
+.subrow{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 6px;border-radius:0;cursor:pointer}
+.subrow:last-child{border-bottom:0}.subrow:hover{background:var(--bg)}
+.exd{font-size:17px;color:var(--warn)}.exd.near{color:var(--bad)}
