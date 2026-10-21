@@ -78,3 +78,10 @@ button.av{cursor:pointer;font:inherit;font-weight:700;padding:0}
 .pf{display:flex;gap:16px;align-items:center;margin-bottom:16px}
 .pbtn{display:inline-block;cursor:pointer;margin-right:8px}
 .danger{color:var(--bad);border-color:var(--bad)}
+.who{position:relative}
+.menu{display:none;position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.18);padding:6px;z-index:20}
+.menu.open{display:block}
+.menu .mhead{padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:4px;font-size:13.5px;color:var(--mute);overflow-wrap:anywhere}
+.menu .mhead b{display:block;color:var(--ink);font-size:15px}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:10px;border-radius:8px;font-weight:600}
+.menu button:hover{background:var(--bg)}.menu button.dn{color:var(--bad)}
