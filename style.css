@@ -67,3 +67,9 @@ a.lnk:hover{background:var(--bg)}
 .bnav button{flex:1;background:none;border:0;padding:13px 4px;font-weight:700;color:var(--mute);border-top:3px solid transparent}
 .bnav button.on{color:var(--acc);border-top-color:var(--acc)}
 .stats{grid-template-columns:1fr 1fr}.stat:first-child{grid-column:1/-1}.hello{font-size:24px}}
+button.av{cursor:pointer;font:inherit;font-weight:700;padding:0}
+.pick{margin:6px 0 14px}.sb{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg)}
+.sb summary{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;list-style:none}
+.sb summary::-webkit-details-marker{display:none}
+.sb summary .chk{margin:0;align-items:center;color:var(--ink);font-size:15px}
+.sb .ci{padding:6px 14px 6px 34px;margin:0;font-size:14px;color:var(--ink)}
