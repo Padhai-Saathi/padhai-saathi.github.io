@@ -67,6 +67,7 @@ function timetable(){const L=ttList(ttV,ttD),ed=ttE&&L.find(x=>x.id==ttE),dn=DAY
  h+=`<div class="card"><div class="row" style="margin-bottom:6px"><b>${dn}</b><span class="mute">${L.length} ${L.length==1?"entry":"entries"}</span></div>${L.length?L.map(x=>`<div class="ch"><span><b>${f12(x.s)} – ${f12(x.e)}</b><div class="mute">${esc(x.n)} · ${esc(x.k)}</div></span><button class="ghost" onclick="ttEdit('${x.id}')">Edit</button><button class="x" aria-label="Remove entry" onclick="ttDel('${x.id}')">×</button></div>`).join(""):`<p class="mute" style="margin:0">Nothing added for ${dn} yet.</p>`}</div>`;
  h+=`<div class="card"><b>${ed?"Edit entry":"Add an entry"}</b><div class="two" style="margin-top:8px"><div><label for="t1">Start time</label><input type="time" id="t1" value="${ed?ed.s:""}"></div><div><label for="t2">End time</label><input type="time" id="t2" value="${ed?ed.e:""}"></div></div><label for="tn">${ttV=="school"?"Subject or activity":"Activity"}</label><input id="tn" list="tsub" maxlength="60" placeholder="${ttV=="school"?"For example, Maths":"For example, Revise Science"}" value="${ed?esc(ed.n):""}"><datalist id="tsub">${Object.keys(D.subs).map(k=>`<option value="${esc(k)}">`).join("")}</datalist><label for="tk">Type</label><select id="tk">${KINDS[ttV].map(k=>`<option ${ed&&ed.k==k?"selected":""}>${k}</option>`).join("")}</select>${ed?"":dayPicker()}<button class="btn" onclick="ttSave()">${ed?"Save changes":"Add"}</button>${ed?`<button class="ghost" style="margin-left:8px" onclick="ttCancel()">Cancel</button>`:""}</div>`;
  if(L.length)h+=`<div class="card"><b>Copy ${dn} to other days</b><p class="mute" style="margin:2px 0 8px">Saves time if several days are the same. Entries on the chosen days are replaced.</p><div class="row"><select id="tcp" style="margin:0">${cps.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select><button class="ghost" style="flex:none" onclick="ttCopy()">Copy</button></div></div>`;
+ h+=`<div class="card"><b>Download as PDF</b><p class="mute" style="margin:2px 0 8px">Choose what to include and the A4 page layout. In the window that opens, set the destination to "Save as PDF".</p><div class="two"><div><label for="pw">Include</label><select id="pw"><option value="school" ${ttV=="school"?"selected":""}>School timetable</option><option value="me" ${ttV=="me"?"selected":""}>My daily schedule</option><option value="both">Both</option></select></div><div><label for="po">Page layout</label><select id="po"><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select></div></div><button class="btn" onclick="ttPdf()">Download PDF</button></div>`;
  return h}
 let lib={v:"notes",c:null,draft:{t:"",x:""},pend:[]},NC={key:"",list:[],busy:false};
 const okImg=d=>typeof d=="string"&&d.startsWith("data:image/jpeg;base64,");
@@ -209,6 +210,16 @@ const W={
  viewNote(id,i){const n=NC.list.find(x=>x.id==id),d=n&&(n.im||[]).filter(okImg)[i];if(d)showImg(d,false)},
  bookAdd(){const t=$("bt").value.trim(),u=$("bu").value.trim();if(!t)return note("Please enter the book name.");if(!safe(u))return note("Please paste a valid link.");D.books.push({id:uid(),s:cur,c:lib.c,t,u});save();render()},
  bookDel(id){D.books=D.books.filter(b=>b.id!=id);save();render()},
+ ttPdf(){const which=$("pw").value,ori=$("po").value;
+  const page=(w,title)=>{const days=DAYS.filter(d=>ttList(w,d[0]).length||!["sat","sun"].includes(d[0])),any=DAYS.some(d=>ttList(w,d[0]).length);
+   const cell=d=>{const L=ttList(w,d[0]);return L.length?L.map(x=>`<div class="pe"><b>${f12(x.s)} – ${f12(x.e)}</b><br>${esc(x.n)} <i>(${esc(x.k)})</i></div>`).join(""):"–"};
+   const body=!any?`<p>No entries added yet.</p>`:ori=="landscape"?`<table><tr>${days.map(d=>`<th>${d[2]}</th>`).join("")}</tr><tr>${days.map(d=>`<td>${cell(d)}</td>`).join("")}</tr></table>`:`<table>${days.map(d=>`<tr><th>${d[2]}</th><td>${cell(d)}</td></tr>`).join("")}</table>`;
+   return `<section><div class="pt">Padhai Saathi</div><div class="ps">${esc(tc(D.name))}${D.school?" · "+esc(tc(D.school)):""} · ${esc(D.board)} · Class ${D.cls}</div><h2>${title}</h2>${body}</section>`};
+  const old=document.getElementById("printarea");if(old)old.remove();const os=document.getElementById("pgsty");if(os)os.remove();
+  const st=document.createElement("style");st.id="pgsty";st.textContent=`@page{size:A4 ${ori};margin:12mm}`;document.head.appendChild(st);
+  const d=document.createElement("div");d.id="printarea";d.className=ori;
+  d.innerHTML=(which!="me"?page("school","School timetable"):"")+(which!="school"?page("me","My daily schedule"):"");
+  document.body.appendChild(d);setTimeout(()=>window.print(),150)},
  delEx(id){D.exams=D.exams.filter(e=>e.id!=id);save();render()},
  saveL(){D.links.web=$("lw").value.trim();D.links.wa=$("lwa").value.trim();save();render();note("Saved.",true)},
  addG(){const n=$("gn").value.trim();if(!n)return;D.links.groups.push({n,l:$("gl").value.trim()});save();render()},
