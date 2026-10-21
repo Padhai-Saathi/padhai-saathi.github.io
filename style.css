@@ -73,3 +73,8 @@ button.av{cursor:pointer;font:inherit;font-weight:700;padding:0}
 .sb summary::-webkit-details-marker{display:none}
 .sb summary .chk{margin:0;align-items:center;color:var(--ink);font-size:15px}
 .sb .ci{padding:6px 14px 6px 34px;margin:0;font-size:14px;color:var(--ink)}
+.av{overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;display:block}
+.av.big{width:88px;height:88px;font-size:32px;flex:none}
+.pf{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.pbtn{display:inline-block;cursor:pointer;margin-right:8px}
+.danger{color:var(--bad);border-color:var(--bad)}
