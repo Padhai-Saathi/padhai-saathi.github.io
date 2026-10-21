@@ -5,7 +5,8 @@ import {firebaseConfig} from "./firebase-config.js";
 import {PRESET,BOARDS,CLASSES} from "./data.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id),ST=["Not started","In progress","Done","Revision"],GM=/^[a-z0-9._+-]+@gmail\.com$/i;
-const ERR={"auth/invalid-credential":"Incorrect email or password.","auth/email-already-in-use":"This Gmail is already registered. Please sign in instead.","auth/weak-password":"Password must be at least 8 characters.","auth/too-many-requests":"Too many attempts. Please try again later.","auth/popup-closed-by-user":"Sign-in was cancelled.","auth/network-request-failed":"Network error. Please check your connection.",def:"Something went wrong. Please try again."};
+const ERR={"auth/invalid-credential":"Incorrect email or password.","auth/email-already-in-use":"This Gmail is already registered. Please sign in instead.","auth/weak-password":"Password must be at least 8 characters.","auth/too-many-requests":"Too many attempts. Please try again later.","auth/popup-closed-by-user":"Sign-in was cancelled.","auth/cancelled-popup-request":"Sign-in was cancelled.","auth/unauthorized-domain":"This website is not authorised in Firebase yet. Add its domain under Authentication > Settings > Authorized domains.","auth/operation-not-allowed":"This sign-in method is not enabled in Firebase yet.","auth/popup-blocked":"Your browser blocked the sign-in pop-up. Allow pop-ups for this site and try again.","auth/network-request-failed":"Network error. Please check your connection.",def:"Something went wrong. Please try again."};
+const errMsg=x=>{console.error(x);return ERR[x.code]||ERR.def+" ("+(x.code||"unknown")+")"};
 let U=null,D=null,view="load",mode="in",tab="syl",cur="Maths",lastSent=0,saveT;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct=a=>a.length?Math.round(a.filter(c=>c.s==2).length/a.length*100):0,left=a=>a.filter(c=>c.s<2).length;
@@ -69,16 +70,16 @@ function school(){const L=D.links,w=safe(L.web),wa=safe(L.wa);
 const W={
  go(t){tab=t;render();scrollTo(0,0)},
  setMode(m){mode=m;render()},
- async google(){try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){note(ERR[x.code]||ERR.def)}},
+ async google(){try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){note(errMsg(x))}},
  async submitAuth(){const e=$("em").value.trim().toLowerCase(),p=$("pw").value;
   if(!GM.test(e))return note(hint(e));if(p.length<8)return note(ERR["auth/weak-password"]);
   if(mode=="up"&&!$("ag").checked)return note("Please accept the Terms and Privacy Policy to continue.");
-  try{if(mode=="up"){const c=await createUserWithEmailAndPassword(auth,e,p);lastSent=Date.now();await sendEmailVerification(c.user)}else await signInWithEmailAndPassword(auth,e,p)}catch(x){note(ERR[x.code]||ERR.def)}},
+  try{if(mode=="up"){const c=await createUserWithEmailAndPassword(auth,e,p);lastSent=Date.now();await sendEmailVerification(c.user)}else await signInWithEmailAndPassword(auth,e,p)}catch(x){note(errMsg(x))}},
  async forgot(){const e=$("em").value.trim().toLowerCase();if(!GM.test(e))return note("Enter your Gmail address above first.");
   try{await sendPasswordResetEmail(auth,e)}catch(x){}note("If this Gmail has an account, a password reset link has been sent.",true)},
- async checkV(){try{await U.reload();if(U.emailVerified){await U.getIdToken(true);enter(U)}else note("Your email is not verified yet. Open the link we sent to your Gmail, then try again.")}catch(x){note(ERR[x.code]||ERR.def)}},
+ async checkV(){try{await U.reload();if(U.emailVerified){await U.getIdToken(true);enter(U)}else note("Your email is not verified yet. Open the link we sent to your Gmail, then try again.")}catch(x){note(errMsg(x))}},
  async resend(){if(Date.now()-lastSent<60000)return note("Please wait a minute before requesting another email.");
-  try{await sendEmailVerification(U);lastSent=Date.now();note("Verification email sent.",true)}catch(x){note(ERR[x.code]||ERR.def)}},
+  try{await sendEmailVerification(U);lastSent=Date.now();note("Verification email sent.",true)}catch(x){note(errMsg(x))}},
  out(){signOut(auth)},
  setup(){const n=$("nm").value.trim();if(!n)return note("Please enter your name.");D=fresh(n,$("sc").value.trim(),$("bd").value,+$("cl").value);view="main";save();render()},
  pick(i){cur=Object.keys(D.subs)[i];render()},
