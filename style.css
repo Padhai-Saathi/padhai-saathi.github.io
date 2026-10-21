@@ -95,3 +95,6 @@ button.av:disabled{cursor:default;color:var(--acc)}
 .subrow{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 6px;border-radius:0;cursor:pointer}
 .subrow:last-child{border-bottom:0}.subrow:hover{background:var(--bg)}
 .exd{font-size:17px;color:var(--warn)}.exd.near{color:var(--bad)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tabs button small{font-size:11px}
+@media (max-width:700px){.bnav button{font-size:12.5px;padding:13px 2px}}
