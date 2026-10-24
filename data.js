@@ -1,3 +1,11 @@
+// CBSE Class 7 syllabus (2026-27, NCERT books). Books: Maths - Ganita Prakash (Part 1 & 2) | Science - Curiosity | Social Science - Exploring Society: India and Beyond (Part 1 & 2) | English - Poorvi | Hindi - Malhar
+const CBSE7={
+"Maths":["Part 1 – Large Numbers Around Us","Part 1 – Arithmetic Expressions","Part 1 – A Peek Beyond the Point","Part 1 – Expressions Using Letter-Numbers","Part 1 – Parallel and Intersecting Lines","Part 1 – Number Play","Part 1 – A Tale of Three Intersecting Lines","Part 1 – Working with Fractions","Part 2 – Geometric Twins","Part 2 – Operations with Integers","Part 2 – Finding Common Ground","Part 2 – Another Peek Beyond the Point","Part 2 – Connecting the Dots","Part 2 – Constructions and Tilings","Part 2 – Finding the Unknown"],
+"Science":["The Ever-Evolving World of Science","Exploring Substances: Acidic, Basic, and Neutral","Electricity: Circuits and their Components","The World of Metals and Non-metals","Changes Around Us: Physical and Chemical","Adolescence: A Stage of Growth and Change","Heat Transfer in Nature","Measurement of Time and Motion","Life Processes in Animals","Life Processes in Plants","Light: Shadows and Reflections","Earth, Moon, and the Sun"],
+"Social Science":["Part 1 – Geographical Diversity of India","Part 1 – Understanding the Weather","Part 1 – Climate of India","Part 1 – New Beginnings: Cities and States","Part 1 – The Rise of Empires","Part 1 – The Age of Reorganisation","Part 1 – The Gupta Era: An Age of Tireless Creativity","Part 1 – How the Land Becomes Sacred","Part 1 – From the Rulers to the Rules: Types of Governments","Part 1 – The Constitution of India: An Introduction","Part 1 – From Barter to Money","Part 1 – Understanding Markets","Part 2 – The Story of Indian Farming","Part 2 – India and Her Neighbours","Part 2 – Empires and Kingdoms: 6th to 10th Centuries","Part 2 – Turning Tides: 11th and 12th Centuries","Part 2 – India, a Home to Many","Part 2 – The State, the Government, and You","Part 2 – Infrastructure: Engine of India’s Development","Part 2 – Banks and the Magic of Finance"],
+"English":["Unit 1: The Day the River Spoke","Unit 1: Try Again","Unit 1: Three Days to See","Unit 2: Animals, Birds, and Dr. Dolittle","Unit 2: A Funny Man","Unit 2: Say the Right Thing","Unit 3: My Brother’s Great Invention","Unit 3: Paper Boats","Unit 3: North, South, East, West","Unit 4: The Tunnel","Unit 4: Travel","Unit 4: Conquering the Summit","Unit 5: A Homage to Our Brave Soldiers","Unit 5: My Dear Soldiers","Unit 5: Rani Abbakka"],
+"Hindi":["माँ, कह एक कहानी","तीन बुद्धिमान (लोककथा)","फूल और काँटा (कविता)","पानी रे पानी (निबंध)","नहीं होना बीमार (कहानी)","गिरधर कविराय की कुंडलियाँ (कविता)","वर्षा-बहार (कविता)","बिरजू महाराज से साक्षात्कार","चिड़िया (कविता)","मीरा के पद (पद)"]};
+
 // CBSE Class 9 syllabus (2026-27, naye NCERT books). Naye subject ya chapter yahan add/badal sakte hain.
 // Books: Maths - Ganita Manjari | Science - Exploration | Social Science - Understanding Society: India and Beyond | English - Kaveri | Hindi - Ganga
 const CBSE9={
@@ -16,6 +24,6 @@ const CBSE6={
 "Hindi":["मातृभूमि (कविता)","गोल (संस्मरण)","पहली बूँद (कविता)","हार की जीत (कहानी)","रहीम के दोहे (दोहे)","मेरी माँ (आत्मकथा)","जलाते चलो","सत्रिया और बिहू नृत्य (निबंध)","मैया मैं नहिं माखन खायो (पद)","परीक्षा (कहानी)","चेतक की वीरता (कविता)","हिंद महासागर में छोटा-सा हिंदुस्तान (यात्रा वृतांत)","पेड़ की बात (निबंध)"]};
 
 // Preloaded syllabus. Key format: "Board-Class". Add more boards/classes here later.
-export const PRESET={"CBSE-6":CBSE6,"CBSE-9":CBSE9};
+export const PRESET={"CBSE-6":CBSE6,"CBSE-7":CBSE7,"CBSE-9":CBSE9};
 export const BOARDS=["CBSE","ICSE / ISC","PSEB (Punjab)","Other state board"];
 export const CLASSES=[6,7,8,9,10,11,12];
