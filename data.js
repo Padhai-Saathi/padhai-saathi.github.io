@@ -6,6 +6,14 @@ const CBSE7={
 "English":["Unit 1: The Day the River Spoke","Unit 1: Try Again","Unit 1: Three Days to See","Unit 2: Animals, Birds, and Dr. Dolittle","Unit 2: A Funny Man","Unit 2: Say the Right Thing","Unit 3: My Brother’s Great Invention","Unit 3: Paper Boats","Unit 3: North, South, East, West","Unit 4: The Tunnel","Unit 4: Travel","Unit 4: Conquering the Summit","Unit 5: A Homage to Our Brave Soldiers","Unit 5: My Dear Soldiers","Unit 5: Rani Abbakka"],
 "Hindi":["माँ, कह एक कहानी","तीन बुद्धिमान (लोककथा)","फूल और काँटा (कविता)","पानी रे पानी (निबंध)","नहीं होना बीमार (कहानी)","गिरधर कविराय की कुंडलियाँ (कविता)","वर्षा-बहार (कविता)","बिरजू महाराज से साक्षात्कार","चिड़िया (कविता)","मीरा के पद (पद)"]};
 
+// CBSE Class 8 syllabus (2026-27, NCERT books). Books: Maths - Ganita Prakash (Part 1 & 2) | Science - Curiosity | Social Science - Exploring Society: India and Beyond (Part 1 & 2) | English - Poorvi | Hindi - Malhar
+const CBSE8={
+"Maths":["Part 1 – A Square and a Cube","Part 1 – Power Play","Part 1 – A Story of Numbers","Part 1 – Quadrilaterals","Part 1 – Number Play","Part 1 – We Distribute, Yet Things Multiply","Part 1 – Proportional Reasoning-1","Part 2 – Fractions in Disguise","Part 2 – The Baudhayana-Pythagoras Theorem","Part 2 – Proportional Reasoning-2","Part 2 – Exploring Some Geometric Themes","Part 2 – Tales by Dots and Lines","Part 2 – Algebra Play","Part 2 – Area"],
+"Science":["Exploring the Investigative World of Science","The Invisible Living World: Beyond Our Naked Eye","Health: The Ultimate Treasure","Electricity: Magnetic and Heating Effects","Exploring Forces","Pressure, Winds, Storms, and Cyclones","Particulate Nature of Matter","Nature of Matter: Elements, Compounds, and Mixtures","The Amazing World of Solutes, Solvents, and Solutions","Light: Mirrors and Lenses","Keeping Time with the Skies","How Nature Works in Harmony","Our Home: Earth, a Unique Life Sustainer"],
+"Social Science":["Part 1 – Natural Resources and Their Use","Part 1 – Reshaping India’s Political Map","Part 1 – The Rise of the Marathas","Part 1 – The Colonial Era in India","Part 1 – Universal Franchise and India’s Electoral System","Part 1 – The Parliamentary System: Legislature and Executive","Part 1 – Factors of Production","Part 2 – World Geography: Some Glimpses","Part 2 – India’s Long Road to Independence","Part 2 – A Journey Through Indian Architecture","Part 2 – The Role of the Judiciary in Our Society","Part 2 – Citizenship: Rights and Duties","Part 2 – Dynamics of Population","Part 2 – India’s Urban Landscape","Part 2 – Cultural Currents: 13th to 17th Centuries"],
+"English":["Unit 1: The Wit that Won Hearts","Unit 1: A Concrete Example","Unit 1: Wisdom Paves the Way","Unit 2: A Tale of Valour: Major Somnath Sharma and the Battle of Badgam","Unit 2: Somebody’s Mother","Unit 2: Verghese Kurien – I Too Had a Dream","Unit 3: The Case of the Fifth Word","Unit 3: The Magic Brush of Dreams","Unit 3: Spectacular Wonders","Unit 4: The Cherry Tree","Unit 4: Harvest Hymn","Unit 4: Waiting for the Rain","Unit 5: Feathered Friend","Unit 5: Magnifying Glass","Unit 5: Bibha Chowdhuri: The Beam of Light that Lit the Path for Women in Indian Science"],
+"Hindi":["स्वदेश","दो गौरैया","एक आशीर्वाद","हरिद्वार","कबीर के दोहे","एक टोकरी भरी मिट्टी","मत बाँधो","नए मेहमान","आदमी का अनुपात","तरुण के स्वप्न"]};
+
 // CBSE Class 9 syllabus (2026-27, naye NCERT books). Naye subject ya chapter yahan add/badal sakte hain.
 // Books: Maths - Ganita Manjari | Science - Exploration | Social Science - Understanding Society: India and Beyond | English - Kaveri | Hindi - Ganga
 const CBSE9={
@@ -24,6 +32,6 @@ const CBSE6={
 "Hindi":["मातृभूमि (कविता)","गोल (संस्मरण)","पहली बूँद (कविता)","हार की जीत (कहानी)","रहीम के दोहे (दोहे)","मेरी माँ (आत्मकथा)","जलाते चलो","सत्रिया और बिहू नृत्य (निबंध)","मैया मैं नहिं माखन खायो (पद)","परीक्षा (कहानी)","चेतक की वीरता (कविता)","हिंद महासागर में छोटा-सा हिंदुस्तान (यात्रा वृतांत)","पेड़ की बात (निबंध)"]};
 
 // Preloaded syllabus. Key format: "Board-Class". Add more boards/classes here later.
-export const PRESET={"CBSE-6":CBSE6,"CBSE-7":CBSE7,"CBSE-9":CBSE9};
+export const PRESET={"CBSE-6":CBSE6,"CBSE-7":CBSE7,"CBSE-8":CBSE8,"CBSE-9":CBSE9};
 export const BOARDS=["CBSE","ICSE / ISC","PSEB (Punjab)","Other state board"];
 export const CLASSES=[6,7,8,9,10,11,12];
