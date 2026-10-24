@@ -7,7 +7,15 @@ const CBSE9={
 "English":["Prose: How I Taught My Grandmother to Read","Prose: The Pot Maker","Prose: Winds of Change","Prose: Vitamin-M","Prose: The World of Limitless Possibilities","Prose: Twin Melodies","Prose: Carrier of Words","Prose: Follow That Dream","Poetry: Bharat Our Land","Poetry: Gifts of Grace: Honouring our Vocations","Poetry: Canvas of Soil","Poetry: I Cannot Remember My Mother","Poetry: Nine Gold Medals","Poetry: A Friend Found in Music","Poetry: Words","Poetry: Believe in Yourself"],
 "Hindi":["गद्य: दो बैलों की कथा","गद्य: क्या लिखूँ?","गद्य: संवादहीन","गद्य: ऐसी भी बातें होती हैं","गद्य: आखिरी चट्टान तक","गद्य: रीढ़ की हड्डी","गद्य: मैं और मेरा देश","काव्य: पद (रैदास)","काव्य: राम-लक्ष्मण-परशुराम संवाद","काव्य: भारती, जय, विजयकरे!","काव्य: झाँसी की रानी","काव्य: घर की याद"]};
 
+// CBSE Class 6 syllabus (2026-27, NCERT books). Books: Maths - Ganita Prakash | Science - Curiosity | Social Science - Exploring Society: India and Beyond | English - Poorvi | Hindi - Malhar
+const CBSE6={
+"Maths":["Patterns in Mathematics","Lines and Angles","Number Play","Data Handling and Presentation","Prime Time","Perimeter and Area","Fractions","Playing with Constructions","Symmetry","The Other Side of Zero"],
+"Science":["The Wonderful World of Science","Diversity in the Living World","Mindful Eating: A Path to a Healthy Body","Exploring Magnets","Measurement of Length and Motion","Materials Around Us","Temperature and its Measurement","A Journey through States of Water","Methods of Separation in Everyday Life","Living Creatures: Exploring their Characteristics","Nature’s Treasures","Beyond Earth"],
+"Social Science":["Locating Places on the Earth","Oceans and Continents","Landforms and Life","Timeline and Sources of History","India, That Is Bharat","The Beginnings of Indian Civilisation","India’s Cultural Roots","Unity in Diversity, or ‘Many in the One’","Family and Community","Grassroots Democracy – Part 1: Governance","Grassroots Democracy – Part 2: Local Government in Rural Areas","Grassroots Democracy – Part 3: Local Government in Urban Areas","The Value of Work","Economic Activities Around Us"],
+"English":["Unit 1: A Bottle of Dew","Unit 1: The Raven and the Fox","Unit 1: Rama to the Rescue","Unit 2: The Unlikely Best Friends","Unit 2: A Friend’s Prayer","Unit 2: The Chair","Unit 3: Neem Baba","Unit 3: What a Bird Thought","Unit 3: Spices that Heal Us","Unit 4: Change of Heart","Unit 4: The Winner","Unit 4: Yoga – A Way of Life","Unit 5: Hamara Bharat – Incredible India!","Unit 5: The Kites","Unit 5: Ila Sachani: Embroidering Dreams with her Feet","Unit 5: National War Memorial"],
+"Hindi":["मातृभूमि (कविता)","गोल (संस्मरण)","पहली बूँद (कविता)","हार की जीत (कहानी)","रहीम के दोहे (दोहे)","मेरी माँ (आत्मकथा)","जलाते चलो","सत्रिया और बिहू नृत्य (निबंध)","मैया मैं नहिं माखन खायो (पद)","परीक्षा (कहानी)","चेतक की वीरता (कविता)","हिंद महासागर में छोटा-सा हिंदुस्तान (यात्रा वृतांत)","पेड़ की बात (निबंध)"]};
+
 // Preloaded syllabus. Key format: "Board-Class". Add more boards/classes here later.
-export const PRESET={"CBSE-9":CBSE9};
+export const PRESET={"CBSE-6":CBSE6,"CBSE-9":CBSE9};
 export const BOARDS=["CBSE","ICSE / ISC","PSEB (Punjab)","Other state board"];
 export const CLASSES=[6,7,8,9,10,11,12];
